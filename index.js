@@ -1,15 +1,24 @@
+require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const formidableMiddleware = require("express-formidable");
 
 const app = express();
 
-app.get("/", (req, res) => {
-  res.json({ message: "hello world" });
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 });
 
-//
-// test
+app.use(cors());
+app.use(formidableMiddleware());
+
+require("./MODELS/model_user");
+
+const roadUser = require("./ROADS/road_user");
+app.use(roadUser);
 
 app.listen(4000, () => {
   console.log("server started");
