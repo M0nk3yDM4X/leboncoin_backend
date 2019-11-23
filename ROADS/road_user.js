@@ -6,6 +6,7 @@ const encBase64 = require("crypto-js/enc-base64");
 const uid2 = require("uid2");
 
 const User = require("../MODELS/model_user");
+const Offer = require("../MODELS/model_offer");
 
 router.post("/user/sign_up", async (req, res) => {
   const token = uid2(64);
