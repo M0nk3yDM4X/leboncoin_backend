@@ -4,11 +4,12 @@ const Offer = mongoose.model("Offer", {
   title: String,
   description: String,
   price: Number,
-  created: { type: Date, default: new Date() },
+  pictures: [],
   creator: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
-  }
+  },
+  created: { type: Date, default: new Date() }
 });
 
 module.exports = Offer;

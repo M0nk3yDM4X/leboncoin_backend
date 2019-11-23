@@ -39,7 +39,11 @@ router.post("/user/sign_up", async (req, res) => {
 });
 
 router.post("/user/log_in", async (req, res) => {
-  const findUser = await User.findOne({ email: req.fields.email });
+  const findUser = await User.findOne({ email: req.fields.email })
+    .select("+hash")
+    .select("+token")
+    .select("+email")
+    .select("+salt");
   try {
     if (findUser) {
       if (
