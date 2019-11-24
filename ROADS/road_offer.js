@@ -49,41 +49,27 @@ router.post("/offer/publish", async (req, res) => {
   });
 });
 
-const createFilters = req => {
-  const filters = {};
-
-  if (req.query.priceMin) {
-    filters.price = {};
-    filters.price.$gte = req.query.priceMin;
-  }
-  if (req.query.priceMax) {
-    if (filters.price === undefined) {
-      filters.price = {};
-    }
-    filters.price.$lte = req.query.priceMax;
-  }
-
-  if (req.query.title) {
-    filters.title = new RegExp(req.query.title, "i");
-  }
-
-  return filters;
-};
-
 router.get("/offer/with-count", async (req, res) => {
-  const list = {};
-  const filters = createFilters(req);
   try {
-    const search = await Offer.find(filters).populate("creator");
+    const list = {};
 
-    if (req.query.sort === "price-asc") {
-      search.sort({ price: 1 });
-    } else if (req.query.sort === "price-desc") {
-      search.sort({ price: -1 });
-    }
+    const search = await Offer.find().populate("creator");
+
     list.count = search.length;
     list.offers = await search;
     res.json(list);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.get("/offer/", async (req, res) => {
+  let id = req.query.id;
+  try {
+    const searchOffer = await Offer.findById(id).populate("creator");
+    console.log(searchOffer);
+
+    res.json(searchOffer);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
