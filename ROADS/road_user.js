@@ -8,6 +8,8 @@ const uid2 = require("uid2");
 const User = require("../MODELS/model_user");
 const Offer = require("../MODELS/model_offer");
 
+// ouais ouais ouais
+
 router.post("/user/sign_up", async (req, res) => {
   const token = uid2(64);
   const salt = uid2(64);
