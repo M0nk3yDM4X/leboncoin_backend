@@ -11,13 +11,15 @@ cloudinary.config({
 const User = require("../MODELS/model_user");
 const Offer = require("../MODELS/model_offer");
 
+// CREATE
+
 router.post("/offer/publish", async (req, res) => {
   const tokenTab = req.headers.authorization.split(" ");
   let token = tokenTab[1];
   // console.log("token", token);
 
   const foundUser = await User.findOne({ token: token });
-  console.log(foundUser._id);
+  // console.log(foundUser._id);
   // console.log(req.files);
 
   let file = {};
@@ -28,7 +30,16 @@ router.post("/offer/publish", async (req, res) => {
 
   cloudinary.v2.uploader.upload(file.path, async (error, result) => {
     if (error) {
-      console.log("error");
+      const newOffer = new Offer({
+        title: req.fields.title,
+        description: req.fields.description,
+        price: req.fields.price,
+        creator: foundUser._id,
+        created: new Date()
+      });
+      await newOffer.save();
+
+      res.json(newOffer);
     } else {
       try {
         const newOffer = new Offer({
@@ -49,25 +60,138 @@ router.post("/offer/publish", async (req, res) => {
   });
 });
 
-router.get("/offer/with-count", async (req, res) => {
-  try {
-    const list = {};
+// READ;
 
-    const search = await Offer.find().populate("creator");
+const createFilters = req => {
+  const filters = {};
+
+  if (req.query.priceMin) {
+    filters.price = {};
+    filters.price.$gte = req.query.priceMin;
+  }
+  if (req.query.priceMax) {
+    if (filters.price === undefined) {
+      filters.price = {};
+    }
+    filters.price.$lte = req.query.priceMax;
+  }
+
+  if (req.query.title) {
+    filters.title = new RegExp(req.query.title, "i");
+  }
+  return filters;
+};
+
+const asc = (a, b) => {
+  const priceA = a.price;
+  const priceB = b.price;
+
+  let comparison = 0;
+
+  if (priceA > priceB) {
+    comparison = 1;
+  } else if (priceA < priceB) {
+    comparison = -1;
+  }
+  return comparison;
+};
+const desc = (a, b) => {
+  const priceA = a.price;
+  const priceB = b.price;
+
+  let comparison = 0;
+
+  if (priceA > priceB) {
+    comparison = 1;
+  } else if (priceA < priceB) {
+    comparison = -1;
+  }
+  return comparison * -1;
+};
+
+// 1. READ-ALL
+
+router.get("/offers/?", async (req, res) => {
+  try {
+    const sort = req.query.sort;
+    let list = {};
+
+    const filters = createFilters(req);
+
+    let search = await Offer.find(filters).populate("creator");
+
+    if (sort) {
+      if (sort === "price-asc") {
+        search.sort(asc);
+      } else if (sort === "price-desc") {
+        search.sort(desc);
+      }
+    }
 
     list.count = search.length;
     list.offers = await search;
+
     res.json(list);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
+// const createFilters = req => {
+//   const filters = {};
 
-router.get("/offer/", async (req, res) => {
-  let id = req.query.id;
+//   if (req.query.priceMin) {
+//     filters.price = {};
+//     filters.price.$gte = req.query.priceMin;
+//   }
+//   if (req.query.priceMax) {
+//     if (filters.price === undefined) {
+//       filters.price = {};
+//     }
+//     filters.price.$lte = req.query.priceMax;
+//   }
+
+//   if (req.query.title) {
+//     filters.title = new RegExp(req.query.title, "i");
+//   }
+//   return filters;
+// };
+
+// // 1. READ-ALL
+
+// router.get("/offers/?", async (req, res) => {
+//   try {
+//     const sort = req.query.sort;
+
+//     let list = {};
+
+//     const filters = createFilters(req);
+
+//     let search = await Offer.find(filters).populate("creator");
+
+//     if (sort) {
+//       if (sort === "price-asc") {
+//         search.sort({ price: 1 });
+//       } else if (sort === "price-desc") {
+//         search.sort({ price: -1 });
+//       }
+//     }
+
+//     list.count = search.length;
+//     list.offers = await search;
+
+//     res.json(list);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//     console.log(error);
+//   }
+// });
+
+// 2. READ-ONE
+
+router.get("/offer/:id", async (req, res) => {
   try {
+    const id = req.params.id;
     const searchOffer = await Offer.findById(id).populate("creator");
-    console.log(searchOffer);
 
     res.json(searchOffer);
   } catch (error) {
