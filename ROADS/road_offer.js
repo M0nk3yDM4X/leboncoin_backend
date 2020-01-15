@@ -82,33 +82,6 @@ const createFilters = req => {
   return filters;
 };
 
-const asc = (a, b) => {
-  const priceA = a.price;
-  const priceB = b.price;
-
-  let comparison = 0;
-
-  if (priceA > priceB) {
-    comparison = 1;
-  } else if (priceA < priceB) {
-    comparison = -1;
-  }
-  return comparison;
-};
-const desc = (a, b) => {
-  const priceA = a.price;
-  const priceB = b.price;
-
-  let comparison = 0;
-
-  if (priceA > priceB) {
-    comparison = 1;
-  } else if (priceA < priceB) {
-    comparison = -1;
-  }
-  return comparison * -1;
-};
-
 // 1. READ-ALL
 
 router.get("/offers/?", async (req, res) => {
@@ -122,9 +95,13 @@ router.get("/offers/?", async (req, res) => {
 
     if (sort) {
       if (sort === "price-asc") {
-        search.sort(asc);
+        search.sort((a, b) => (a.price > b.price ? 1 : -1));
       } else if (sort === "price-desc") {
-        search.sort(desc);
+        search.sort((a, b) => (a.price < b.price ? 1 : -1));
+      } else if (sort === "date-desc") {
+        search.sort((a, b) => (a.created < b.created ? 1 : -1));
+      } else if (sort === "date-asc") {
+        search.sort((a, b) => (a.created > b.created ? 1 : -1));
       }
     }
 

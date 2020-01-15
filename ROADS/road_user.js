@@ -58,7 +58,7 @@ router.post("/user/log_in", async (req, res) => {
           account: findUser.account
         });
       } else {
-        return res.status(401).json({ error: "Unauthorized" });
+        return res.json({ error: "Unauthorized" });
       }
     } else {
       return res.json({ error: "User not found" });
