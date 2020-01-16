@@ -84,84 +84,49 @@ const createFilters = req => {
 
 // 1. READ-ALL
 
-router.get("/offers/?", async (req, res) => {
+router.get("/offers", async (req, res) => {
   try {
     const sort = req.query.sort;
     let list = {};
 
     const filters = createFilters(req);
 
-    let search = await Offer.find(filters).populate("creator");
+    let search = Offer.find(filters).populate("creator");
+    let length = Offer.find(filters);
 
     if (sort) {
       if (sort === "price-asc") {
-        search.sort((a, b) => (a.price > b.price ? 1 : -1));
+        // search.sort((a, b) => (a.price > b.price ? 1 : -1));
+        search.sort({ price: 1 });
       } else if (sort === "price-desc") {
-        search.sort((a, b) => (a.price < b.price ? 1 : -1));
+        search.sort({ price: -1 });
       } else if (sort === "date-desc") {
-        search.sort((a, b) => (a.created < b.created ? 1 : -1));
+        search.sort({ created: -1 });
       } else if (sort === "date-asc") {
-        search.sort((a, b) => (a.created > b.created ? 1 : -1));
+        search.sort({ created: 1 });
       }
     }
 
-    list.count = search.length;
-    list.offers = await search;
+    if (req.query.page) {
+      const page = req.query.page;
+      const limit = 3;
+
+      search.limit(limit).skip(limit * (page - 1));
+    }
+
+    const offers = await search;
+
+    list.offers = offers;
+
+    const data = await length;
+
+    list.count = data.length;
 
     res.json(list);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
-// const createFilters = req => {
-//   const filters = {};
-
-//   if (req.query.priceMin) {
-//     filters.price = {};
-//     filters.price.$gte = req.query.priceMin;
-//   }
-//   if (req.query.priceMax) {
-//     if (filters.price === undefined) {
-//       filters.price = {};
-//     }
-//     filters.price.$lte = req.query.priceMax;
-//   }
-
-//   if (req.query.title) {
-//     filters.title = new RegExp(req.query.title, "i");
-//   }
-//   return filters;
-// };
-
-// // 1. READ-ALL
-
-// router.get("/offers/?", async (req, res) => {
-//   try {
-//     const sort = req.query.sort;
-
-//     let list = {};
-
-//     const filters = createFilters(req);
-
-//     let search = await Offer.find(filters).populate("creator");
-
-//     if (sort) {
-//       if (sort === "price-asc") {
-//         search.sort({ price: 1 });
-//       } else if (sort === "price-desc") {
-//         search.sort({ price: -1 });
-//       }
-//     }
-
-//     list.count = search.length;
-//     list.offers = await search;
-
-//     res.json(list);
-//   } catch (error) {
-//     res.status(400).json({ message: error.message });
-//     console.log(error);
-//   }
-// });
 
 // 2. READ-ONE
 
