@@ -95,14 +95,14 @@ router.get("/offers", async (req, res) => {
     let length = Offer.find(filters);
 
     if (sort) {
-      if (sort === "price-asc") {
+      if (sort === "prix-croissant") {
         // search.sort((a, b) => (a.price > b.price ? 1 : -1));
         search.sort({ price: 1 });
-      } else if (sort === "price-desc") {
+      } else if (sort === "prix-décroissant") {
         search.sort({ price: -1 });
-      } else if (sort === "date-desc") {
+      } else if (sort === "date-décroissant") {
         search.sort({ created: -1 });
-      } else if (sort === "date-asc") {
+      } else if (sort === "date-croissant") {
         search.sort({ created: 1 });
       }
     }
