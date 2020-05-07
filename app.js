@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -17,12 +15,10 @@ mongoose.connect(process.env.MONGODB_URI, {
 require("./MODELS/model_user");
 require("./MODELS/model_offer");
 
-const roadUser = require("./ROADS/road_user");
+const roadUser = require("./ROUTES/road_user");
 app.use(roadUser);
 
-const roadOffer = require("./ROADS/road_offer");
+const roadOffer = require("./ROUTES/road_offer");
 app.use(roadOffer);
 
-app.listen(process.env.PORT, () => {
-  console.log("server started");
-});
+module.exports = app;
